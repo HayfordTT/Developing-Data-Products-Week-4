@@ -1,0 +1,104 @@
+---
+title: "My Shiny App HT"
+author: "Hayford Tetteh"
+date: "16/06/2020"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+### Executive Summary
+This peer assessed assignment has two parts. First, you will create a Shiny application and deploy it on Rstudio's servers. Second, you will use Slidify or Rstudio Presenter to prepare a reproducible pitch presentation about your application.
+
+### Your Shiny Application
+
+Write a shiny application with associated supporting documentation. The documentation should be thought of as whatever a user will need to get started using your application.
+Deploy the application on Rstudio's shiny server
+Share the application link by pasting it into the provided text box
+Share your server.R and ui.R code on github
+The application must include the following:
+
+Some form of input (widget: textbox, radio button, checkbox, ...)
+Some operation on the ui input in sever.R
+Some reactive output displayed as a result of server calculations
+You must also include enough documentation so that a novice user could use your application.
+The documentation should be at the Shiny website itself. Do not post to an external link.
+The Shiny application in question is entirely up to you. However, if you're having trouble coming up with ideas, you could start from the simple prediction algorithm done in class and build a new algorithm on one of the R datasets packages. Please make the package simple for the end user, so that they don't need a lot of your prerequisite knowledge to evaluate your application. You should emphasize a simple project given the short time frame.
+
+### Your Reproducible Pitch Presentation
+
+OK, you've made your shiny app, now it's time to make your pitch. You get 5 slides (inclusive of the title slide) to pitch a your app. You're going to create a web page using Slidify or Rstudio Presenter with an html5 slide deck.
+
+## Documentation
+
+- using the US Car data i have created an interactive shiny app where users can select columns in the data set to display the content in Data table.
+- i have also use the Car and iris data st to create conditional panel where users can select which data to display in the table.
+
+-Lastly users can use the search bar to search for a particular brand, model, year, color of their favourite car.
+
+```{r cars, echo = TRUE}
+library(shiny)
+library(ggplot2)  # for the diamonds dataset
+
+Cars <- read.csv("USA_cars_datasets.csv")
+data(Cars)
+data(mtcars)
+data("iris")
+
+ui <- fluidPage(
+  sidebarLayout(
+    sidebarPanel(
+      conditionalPanel(
+         
+        'input.dataset === "Cars"',
+          checkboxGroupInput("Cars", "Columns in Cars data to show:",
+                             names(Cars), selected = names(Cars)),
+        ),
+      
+      conditionalPanel(
+        'input.dataset === "mtcars"',
+        helpText("Click the column header to sort a column.")
+      ),
+      conditionalPanel(
+        'input.dataset === "iris"',
+        helpText("Display 5 records by default.")
+      )
+    ),
+    mainPanel(
+      tabsetPanel(
+        id = 'dataset',
+        tabPanel("Cars", DT::dataTableOutput("mytable1")),
+        tabPanel("mtcars", DT::dataTableOutput("mytable2")),
+        tabPanel("iris", DT::dataTableOutput("mytable3"))
+      )
+    )
+    ))
+
+server <- function(input, output) {
+  
+  # choose columns to display
+  Cars2 = Cars[sample(nrow(Cars), 1000), ]
+  output$mytable1 <- DT::renderDataTable({
+    DT::datatable(Cars2[, input$Cars, drop = FALSE])
+  })
+  
+
+  
+  # sorted columns are colored now because CSS are attached to them
+  
+  output$mytable2 <- DT::renderDataTable({
+    DT::datatable(mtcars, options = list(orderClasses = TRUE))
+  })
+  
+  # customize the length drop-down menu; display 5 rows per page by default
+  output$mytable3 <- DT::renderDataTable({
+    DT::datatable(iris, options = list(lengthMenu = c(5, 30, 50), pageLength = 5))
+  })
+  
+}
+
+shinyApp(ui, server)
+#shinyApp(ui, server)
+
+```
+
